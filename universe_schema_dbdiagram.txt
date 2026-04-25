@@ -1,0 +1,90 @@
+// ==========================================
+// MASTER TABLES (TYPES & CLASSIFICATIONS)
+// ==========================================
+
+Table galaxy_type {
+  galaxy_type_id int [primary key, increment]
+  name varchar(30) [unique, not null]
+  description text [not null]
+}
+
+Table luminosity_class {
+  luminosity_class_id int [primary key, increment]
+  name varchar(30) [unique, not null]
+  description text [not null]
+}
+
+Table star_type {
+  star_type_id int [primary key, increment]
+  name varchar(100) [unique, not null]
+  // CHECK constraints like IN ('O', 'B'...) are represented as notes in DBML
+  spectral_classification varchar(2) [not null, note: 'NASA Classifications: O, B, A, F, G, K, M, L, T, Y, C, S, W, DA, DB, DC, DO, DZ']
+  description text
+}
+
+Table planet_type {
+  planet_type_id int [primary key, increment]
+  name varchar(30) [unique, not null]
+  description text [not null]
+}
+
+Table moon_type {
+  moon_type_id int [primary key, increment]
+  name varchar(30) [unique, not null]
+  description text [not null]
+}
+
+// ==========================================
+// RELATIONAL TABLES (CELESTIAL BODIES)
+// ==========================================
+
+Table galaxy {
+  galaxy_id int [primary key, increment]
+  name varchar(100) [unique, not null]
+  galaxy_type_id int [not null, ref: > galaxy_type.galaxy_type_id]
+  distance_from_earth_mly int
+  has_supermassive_black_hole boolean
+  is_colliding boolean
+  estimated_celestial_bodies bigint
+  description text
+}
+
+Table star_system {
+  star_system_id int [primary key, increment]
+  galaxy_id int [not null, ref: > galaxy.galaxy_id]
+  name varchar(100) [unique, not null]
+  description text
+  distance_from_galaxy_center numeric
+}
+
+Table star {
+  star_id int [primary key, increment]
+  star_system_id int [not null, ref: > star_system.star_system_id]
+  star_type_id int [not null, ref: > star_type.star_type_id]
+  luminosity_class_id int [not null, ref: > luminosity_class.luminosity_class_id]
+  galaxy_id int [not null, ref: > galaxy.galaxy_id] // Requisito directo de fCC
+  name varchar(100) [unique, not null]
+  is_primary boolean
+  mass_solar_mass float
+  surface_temperature_kelvin int
+}
+
+Table planet {
+  planet_id int [primary key, increment]
+  star_system_id int [not null, ref: > star_system.star_system_id]
+  planet_type_id int [not null, ref: > planet_type.planet_type_id]
+  star_id int [not null, ref: > star.star_id] // Requisito directo de fCC
+  name varchar(100) [unique, not null]
+  planet_mass float
+  has_atmosphere boolean
+  is_habitable boolean
+}
+
+Table moon {
+  moon_id int [primary key, increment]
+  planet_id int [not null, ref: > planet.planet_id]
+  moon_type_id int [not null, ref: > moon_type.moon_type_id]
+  name varchar(100) [unique, not null]
+  is_spherical boolean
+  has_tidal_locking boolean
+} 
